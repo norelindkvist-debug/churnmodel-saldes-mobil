@@ -1,5 +1,6 @@
 name: CI
 
+# works localy, now i will test globaly to see where it fails
 on: push
 
 jobs:
