@@ -1,4 +1,9 @@
 """Testnivå 3: modell. Kontrakt och reproducerbarhet."""
+from sklearn.dummy import DummyClassifier
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import train_test_split
+from churn.model import SEED
+
 import numpy as np
 import pytest
 
@@ -24,3 +29,36 @@ def test_reproducerbar(resultat):
     _, matvarden = resultat
     _, igen = trana_och_utvardera()
     assert igen == matvarden
+
+
+def test_roc_auc_minst_070(resultat):
+    _, matvarden = resultat
+
+    assert matvarden["roc_auc"] >= 0.70
+
+
+def test_modell_battre_an_dummy(resultat):
+    modell, matvarden = resultat
+
+    # Läs in och förbered datan
+    X, y = dela_upp(skapa_features(las_data()))
+
+    # Samma uppdelning som i model.py
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.25,
+        random_state=SEED,
+        stratify=y
+    )
+
+    # Skapa och träna en enkel jämförelsemodell
+    dummy = DummyClassifier(strategy="prior")
+    dummy.fit(X_train, y_train)
+
+    # Beräkna DummyClassifier ROC AUC
+    dummy_sannolikhet = dummy.predict_proba(X_test)[:, 1]
+    dummy_auc = roc_auc_score(y_test, dummy_sannolikhet)
+
+    # Kontrollera att riktiga modellen är bättre
+    assert matvarden["roc_auc"] > dummy_auc

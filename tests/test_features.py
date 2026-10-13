@@ -12,7 +12,7 @@ def liten_df() -> pd.DataFrame:
         {
             "manadskostnad": [299.0, 149.0],
             "data_gb_per_manad": [9.0, 0.0],
-            "region": [" stockholm", "Väst"],
+            "region": ["stockholm", "Väst"],
         }
     )
 
@@ -30,3 +30,10 @@ def test_indata_andras_inte(liten_df):
     original = liten_df.copy()
     skapa_features(liten_df)
     pd.testing.assert_frame_equal(liten_df, original)
+
+def test_region_versaler_normaliseras(liten_df):
+    liten_df["region"] = ["STOCKHOLM", "VÄST"]
+
+    ut = skapa_features(liten_df)
+
+    assert ut["region"].tolist() == ["Stockholm", "Väst"]
