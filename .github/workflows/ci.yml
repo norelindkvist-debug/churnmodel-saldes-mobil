@@ -1,7 +1,10 @@
 name: CI
 
 # works localy, now i will test globaly to see where it fails
-on: push
+on:
+  push:
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
