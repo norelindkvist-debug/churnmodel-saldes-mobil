@@ -28,7 +28,7 @@ jobs:
 
       - run: python -m pip install pytest
 
-      - run: python -m pytest -v
+      - run: python -m pytest tests/test_data.py tests/test_features.py tests/test_model.py -v
 
   train:
     runs-on: ubuntu-latest
@@ -44,5 +44,6 @@ jobs:
           cache-dependency-path: "pyproject.toml"
 
       - run: python -m pip install -e .
-
+      - run: python -m pip install pytest
       - run: python -m churn.model
+      - run: python -m pytest tests/test_training_result.py -v
