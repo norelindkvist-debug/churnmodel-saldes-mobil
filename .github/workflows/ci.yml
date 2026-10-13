@@ -18,6 +18,11 @@ on:
       - "tests/**"
       - "pyproject.toml"
       - ".github/workflows/**"
+
+  schedule:
+    - cron: "0 6 * * 1"
+      timezone: "Europe/Stockholm"
+
   workflow_dispatch:
 
 concurrency:
@@ -112,3 +117,38 @@ jobs:
           else
             echo "Mätvärdesfilen saknas." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+  ringlista:
+    name: Skapa ringlista
+    runs-on: ubuntu-latest
+    needs: utvardera
+
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Installera projektet
+        run: python -m pip install -e .
+
+      - name: Ladda ner godkänd modell
+        uses: actions/download-artifact@v7
+        with:
+          name: modell-${{ github.sha }}
+          path: outputs/
+
+      - name: Skapa ringlista
+        run: python -m churn.score
+
+      - name: Ladda upp ringlista
+        uses: actions/upload-artifact@v7
+        with:
+          name: ringlista-${{ github.sha }}
+          path: outputs/ringlista.csv
+          if-no-files-found: error
